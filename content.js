@@ -1,5 +1,7 @@
+
+
 // Initialize the paste handler function
-document.addEventListener('paste', function (e) {
+document.addEventListener('paste', function (e)  {
 
   let pastedText = (e.clipboardData || window.clipboardData).getData('text');
 
@@ -8,37 +10,22 @@ document.addEventListener('paste', function (e) {
     return;
   }
 
-  // Find the active chat box
-  const activeElement = document.activeElement;
+  const selectors = [
+    'h2.msg-entity-lockup__entity-title', 
+    '.profile-card-one-to-one__profile-link',
+  ];
+  let recipientName = ''; 
 
-  if (!activeElement || !activeElement.classList.contains('msg-form__contenteditable')) {
-    console.log('No active chat box found');
-    return;
-  }
+  for (const selector of selectors) {
+    const element = document.querySelector(selector);
+    console.log(`Trying selector: ${selector}`, 'Element found:', element);
 
-  console.log('Active chat box detected:', activeElement);
+    if (element) {
+      const fullName = element.textContent.trim();
+      console.log('Found full name:', fullName);
 
-  // Try to locate the closest recipient name relative to the active chat box
-  const chatContainer = activeElement.closest('.msg-form');
-  let recipientName = '';
-
-  if (chatContainer) {
-    const nameSelectors = [
-      'h2.msg-entity-lockup__entity-title',
-      '.profile-card-one-to-one__profile-link',
-    ];
-
-    for (const selector of nameSelectors) {
-      const nameElement = chatContainer.querySelector(selector);
-      console.log(`Trying selector: ${selector}, Element found:`, nameElement);
-
-      if (nameElement) {
-        const fullName = nameElement.textContent.trim();
-        console.log('Found full name:', fullName);
-
-        recipientName = fullName.split(' ')[0]; // Extract first name
-        break;
-      }
+      recipientName = fullName.split(' ')[0];
+      break;
     }
   }
 
@@ -47,21 +34,27 @@ document.addEventListener('paste', function (e) {
     return;
   }
 
-  // Replace {name} with the recipient's name
   const modifiedText = pastedText.replace(/{name}/g, recipientName);
 
   e.preventDefault();
 
-  // Modify the chat input field
-  const currentHTML = activeElement.innerHTML;
-  const newHTML = currentHTML.replace('{name}', recipientName);
-  activeElement.innerHTML = newHTML;
+  const activeElement = document.activeElement;
+  if (activeElement && activeElement.classList.contains('msg-form__contenteditable')) {
+    console.log('Active chat box detected');
+    const currentHTML = activeElement.innerHTML;
+    const newHTML = currentHTML.replace('{name}', recipientName);
 
-  // Move the cursor to the end of the modified content
-  const range = document.createRange();
-  const selection = window.getSelection();
-  range.selectNodeContents(activeElement);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
-});
+    activeElement.innerHTML = newHTML;
+
+    // Move the cursor to the end of the modified content
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.selectNodeContents(activeElement);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  } else {
+    console.log('No active chat box found');
+  }
+}
+)

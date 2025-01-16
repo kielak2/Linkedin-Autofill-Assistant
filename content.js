@@ -25,7 +25,6 @@ document.addEventListener('paste', function (e)  {
     range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
-  } else {
   }
 }
 )

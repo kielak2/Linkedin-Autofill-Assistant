@@ -1,5 +1,4 @@
-document.addEventListener('paste', function (e)  {
-
+document.addEventListener('paste', function (e) {
   let pastedText = (e.clipboardData).getData('text');
 
   if (!pastedText.includes('{name}')) {
@@ -25,9 +24,12 @@ document.addEventListener('paste', function (e)  {
     range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
+
+    // Trigger an input event to ensure the platform recognizes the change
+    const event = new Event('input', { bubbles: true });
+    activeElement.dispatchEvent(event);
   }
-}
-)
+});
 
 function getRecipientName() {
   const selectors = [

@@ -5,47 +5,53 @@ document.addEventListener('paste', function (e) {
     return;
   }
 
-  const recipientName = getRecipientName();
+  const activeElement = document.activeElement;
+
+  if (!activeElement || !activeElement.classList.contains('msg-form__contenteditable')) {
+    return;
+  }
+
+  // Find the closest chat container
+  const chatContainer = activeElement.closest('.msg-convo-wrapper');
+  if (!chatContainer) {
+    return;
+  }
+
+  const recipientName = getRecipientNameFromContainer(chatContainer);
   if (!recipientName) {
     return;
   }
 
-  const activeElement = document.activeElement;
-  if (activeElement && activeElement.classList.contains('msg-form__contenteditable')) {
-    const currentHTML = activeElement.innerHTML;
-    const newHTML = currentHTML.replace('{name}', recipientName);
+  const currentHTML = activeElement.innerHTML;
+  const newHTML = currentHTML.replace('{name}', recipientName);
+  activeElement.innerHTML = newHTML;
 
-    activeElement.innerHTML = newHTML;
+  const range = document.createRange();
+  const selection = window.getSelection();
+  range.selectNodeContents(activeElement);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 
-    // Move the cursor to the end of the modified content
-    const range = document.createRange();
-    const selection = window.getSelection();
-    range.selectNodeContents(activeElement);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    // Trigger an input event to ensure the platform recognizes the change
-    const event = new Event('input', { bubbles: true });
-    activeElement.dispatchEvent(event);
-  }
+  const event = new Event('input', { bubbles: true });
+  activeElement.dispatchEvent(event);
 });
 
-function getRecipientName() {
+function getRecipientNameFromContainer(container) {
   const selectors = [
-    'h2.msg-entity-lockup__entity-title',
     '.profile-card-one-to-one__profile-link',
+    '.msg-compose__profile-link',
+    '.msg-entity-lockup__entity-title',
+    '.msg-overlay-bubble-header__title',
   ];
 
   for (const selector of selectors) {
-    const element = document.querySelector(selector);
+    const element = container.querySelector(selector);
 
     if (element) {
       const fullName = element.textContent.trim();
-
       return fullName.split(' ')[0];
     }
   }
-
   return '';
 }
